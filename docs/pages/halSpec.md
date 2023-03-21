@@ -2,41 +2,41 @@
 
 # RMF_AudioCapture HAL Documentation
 
-# Version and Version History
+## Version and Version History
 
+| Date | Author | Comment | Version |
+| --- | --------- | --- | --- |
+| 02/03/23 | Review Team | Edit  | 1.1.0 |
+| 21/09/22 | Chaithen Sojan | First Release | 1.0.0 |
+#TODO
 
-1.0.0 Initial Revision covers existing RMF_AudioCapture HAL implementation.
+## Acronyms
 
-# Description
+3. HAL - Hardware Abstraction layer
+5. SOC - System on chip 
+#TODO
+
+## Description
 RMF AudioCapture is an interface designed to tap into the audio output of an STB/TV. When in use, the underlying
 SoC implementation will deliver a constant stream of raw audio data (PCM). This audio will have the active audio track
 of whatever content is being played, and may include other sounds mixed in, such as voice-guidance, application-driven
-audio overlays (eg: beeps) etc. Application will attempt to configure audio format parameters (channels, bit rate etc.) to its liking
-but not all combinations are expected to be supported by the HAL.
+audio overlays (eg: beeps) etc.
 
 ![RMF_AudioCapture Architecture Diagram](images/RMF_AudioCapture_HAL_architecture.png)
+#TODO change 'application' to 'caller'
 
-Application may choose to use the audio capture capabilities to support use cases such as
-1. Music identification
-2. Bluetooth audio output
- 
 # Component Runtime Execution Requirements
-If RMF_AudioCapture HAL as any
-run-time requirements, they need to be stated clearly and added as dependencies of the application as well. For eg., if RMF_AudioCapture HAL requires
+If RMF_AudioCapture HAL has any run-time requirements, the requirements need to be stated clearly and added as dependencies of the application as well. For eg., if RMF_AudioCapture HAL requires
 any background service to be running or any files/pipes to be created to work, the necessary interlocks must be added to application's launch scripts.
-Most such requirements can be met by tweaking the systemd service file used by the application.
+#TODO reword.
 
-## Theory of operation
 
-Application has complete control over the lifecycle of RMF_AudioCapture HAL.
-Following is a typical sequence of operation:
-1. Open RMF_AudioCapture interface using RMF_AudioCapture_Open(). This is the cue for HAL to acquire the necessary resources.
-2. Get default settings using RMF_AudioCapture_GetDefaultSettings(). This returns a struct of parameters favourable to the HAL. Application may tweak certain members of this struct and pass it with the start() call.
-2. Start audio capture using RMF_AudioCapture_Start. RMF_AudioCapture HAL will continuously deliver audio data to application in real time via callback RMF_AudioCaptureBufferReadyCb.
-3. When the audio stream is no longer needed, stop audio capture using RMF_AudioCapture_Stop(). This will stop the above callbacks.
-4. Close RMF_AudioCapture interface using RMF_AudioCapture_Close(), releasing all resources.
+## Initialization and Startup
+#TODO
 
-Calling RMF_AudioCapture_Open() is a necessary precondition for the remaining APIs to work. 
+
+
+
 #### Sequence Diagram
 
 ![RMF_AudioCapture HAL sequence diagram](images/RMF_AudioCapture_HAL_sequence.png)
@@ -119,9 +119,21 @@ The default settings returned via RMF_AudioCapture_GetDefaultSettings() can be c
 
 Covered as per Doxygen documentation.
 
-## Theory of operation and key concepts
+## Theory of operation
 
-Covered as per "Description" section.
+Application has complete control over the lifecycle of RMF_AudioCapture HAL.
+Following is a typical sequence of operation:
+1. Open RMF_AudioCapture interface using RMF_AudioCapture_Open(). This is the cue for HAL to acquire the necessary resources.
+2. Get default settings using RMF_AudioCapture_GetDefaultSettings(). This returns a struct of parameters favourable to the HAL. Application may tweak certain members of this struct and pass it with the start() call.
+2. Start audio capture using RMF_AudioCapture_Start. RMF_AudioCapture HAL will continuously deliver audio data to application in real time via callback RMF_AudioCaptureBufferReadyCb.
+3. When the audio stream is no longer needed, stop audio capture using RMF_AudioCapture_Stop(). This will stop the above callbacks.
+4. Close RMF_AudioCapture interface using RMF_AudioCapture_Close(), releasing all resources.
+
+Calling RMF_AudioCapture_Open() is a necessary precondition for the remaining APIs to work. 
+
+Caller may choose to use the audio capture capabilities to support use cases such as
+1. Music identification
+2. Bluetooth audio output
 
 ### UML Diagrams
 
