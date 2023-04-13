@@ -11,31 +11,35 @@
 
 ## Table of Contents
 
-- [Acronyms](#acronyms)
-- [Description](#description)
-- [Component Runtime Execution Requirements](#component-runtime-execution-requirements)
-  - [Initialization and Startup](#initialization-and-startup)
-  - [Threading Model](#threading-model)
-  - [Process Model](#process-model)
-  - [Memory Model](#memory-model)
-  - [Power Management Requirements](#power-management-requirements)
-  - [Asynchronous Notification Model](#asynchronous-notification-model)
-  - [Blocking calls](#blocking-calls)
-  - [Internal Error Handling](#internal-error-handling)
-  - [Persistence Model](#persistence-model)
-- [Non-functional requirements](#non-functional-requirements)
-  - [Logging and debugging requirements](#logging-and-debugging-requirements)
-  - [Memory and performance requirements](#memory-and-performance-requirements)
-  - [Quality Control](#quality-control)
-  - [Licensing](#licensing)
-  - [Build Requirements](#build-requirements)
-  - [Variability Management](#variability-management)
-  - [Platform or Product Customization](#platform-or-product-customization)
-- [Interface API Documentation](#interface-api-documentation)
-  - [Theory of operation](#theory-of-operation)
-    - [Architecture Diagram](#architecture-diagram)
-    - [Sequence Diagram](#sequence-diagram)
-    - [State Diagram](#state-diagram)
+- [AudioCapture HAL Documentation](#audiocapture-hal-documentation)
+  - [Version and Version History](#version-and-version-history)
+  - [Table of Contents](#table-of-contents)
+  - [Acronyms, Terms and Abbreviations](#acronyms-terms-and-abbreviations)
+  - [Description](#description)
+  - [Component Runtime Execution Requirements](#component-runtime-execution-requirements)
+    - [Initialization and Startup](#initialization-and-startup)
+    - [Threading Model](#threading-model)
+    - [Process Model](#process-model)
+    - [Memory Model](#memory-model)
+    - [Power Management Requirements](#power-management-requirements)
+    - [Asynchronous Notification Model](#asynchronous-notification-model)
+    - [Blocking calls](#blocking-calls)
+    - [Internal Error Handling](#internal-error-handling)
+    - [Persistence Model](#persistence-model)
+  - [Non-functional requirements](#non-functional-requirements)
+    - [Logging and debugging requirements](#logging-and-debugging-requirements)
+    - [Memory and performance requirements](#memory-and-performance-requirements)
+    - [Quality Control](#quality-control)
+    - [Licensing](#licensing)
+    - [Build Requirements](#build-requirements)
+    - [Variability Management](#variability-management)
+    - [Platform or Product Customization](#platform-or-product-customization)
+  - [Interface API Documentation](#interface-api-documentation)
+    - [Theory of operation](#theory-of-operation)
+      - [Architecture Diagram](#architecture-diagram)
+    - [Diagrams](#diagrams)
+      - [Operational call sequence](#operational-call-sequence)
+      - [State machine of AudioCapture interface](#state-machine-of-audiocapture-interface)
 
 ## Acronyms, Terms and Abbreviations
 
@@ -50,7 +54,7 @@
 
 AudioCapture `HAL` must deliver a constant stream of raw audio data (`PCM`) to the caller. The purpose of audio capture is to tap the final mix of the decoded audio. The audio data delivered via this interface is required to track as closely as possible, i. e., minimal latency,
 to the audio that's being rendered by the device at a given point of time.
-#TODO picture explaining the relationship b/w dcoder, mixer, speaker/HDMI etc.
+![RMF_AudioCapture data schematic](images/RMF_AudioCapture_HAL_audio_flow.png)
 
 ## Component Runtime Execution Requirements
 
@@ -145,7 +149,11 @@ via the registered callbacks in a timely fashion. Calling `RMF_AudioCapture_Open
 
 #### Architecture Diagram
 
-![RMF_AudioCapture Architecture Diagram](images/RMF_AudioCapture_HAL_architecture.png)
+```mermaid
+flowchart
+    D[Caller] --> |control| E[AudioCapture HAL]
+    E --> |audio data| D
+ ```
 
 Following is a typical sequence of operation:
 1. Open the interface using `RMF_AudioCapture_Open()`.
@@ -158,9 +166,44 @@ Following is a typical sequence of operation:
 
 #### Operational call sequence
 
-![RMF_AudioCapture HAL sequence diagram](images/RMF_AudioCapture_HAL_sequence.png)
+
+```mermaid
+   sequenceDiagram
+    caller->>HAL: RMF_AudioCapture_Open()
+    activate HAL
+    HAL-->>caller: handle
+    deactivate HAL
+    caller->>HAL: RMF_AudioCapture_GetDefaultSettings()
+    activate HAL
+    HAL-->>caller: default settings
+    deactivate HAL
+    caller->>caller: generate settings from default settings
+    caller->>HAL: RMF_AudioCapture_Start(handle, settings)
+    activate HAL
+    loop as long as stop is not called
+    HAL->>caller:RMF_AudioCaptureBufferReadyCb(audio buffer)
+    activate caller
+    caller->>caller:consume buffer
+    caller-->>HAL: return
+    deactivate caller
+    end
+    caller->>HAL: RMF_AudioCapture_Stop(handle)
+    deactivate HAL
+    caller->>HAL: RMF_AudioCapture_Close(handle
+ ```
 
 #### State machine of AudioCapture interface
 
-![RMF_AudioCapture HAL state diagram](images/RMF_AudioCapture_HAL_state_machine.png)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: Open()
+    Open --> Started: Start()
+    Started: Started\n(pumping data)
+    Started --> Stopped: Stop()
+    Stopped --> Started: Start()
+    Stopped --> Closed: Close()
+    Closed --> Open: Open()
+    Closed --> [*]
+```
 
