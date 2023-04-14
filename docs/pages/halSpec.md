@@ -200,10 +200,8 @@ stateDiagram-v2
     [*] --> Open: Open()
     Open --> Started: Start()
     Started: Started\n(pumping data)
-    Started --> Stopped: Stop()
-    Stopped --> Started: Start()
-    Stopped --> Closed: Close()
-    Closed --> Open: Open()
+    Started --> Open: Stop()
+    Open --> Closed: Close()
     Closed --> [*]
 ```
 
