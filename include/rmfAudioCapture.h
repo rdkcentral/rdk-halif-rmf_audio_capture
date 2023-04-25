@@ -155,7 +155,7 @@ typedef struct {
     uint32_t    overflows;              /*!< Overflow count */
     uint32_t    underflows;             /*!< Underflow count */
 } RMF_AudioCapture_Status;
-//TODO: int types must change to int32, int64 - inttypes.h. Also use stdbool.h for bool. Important for 32bit vs 64bit compatibility.
+//TODO: use bool (stdbool.h) for started.
 
 
 /*
@@ -181,11 +181,6 @@ typedef struct {
  */
 rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
 
-/* Can be used to enquire the current status of Audio Capture associated with the current Audio Capture context */
-/* After AudioCaptureOpen as long as AudioCaptureHandle this function should return the current capture status.
- Can be called anytime between a AudioCaptureOpen and AudioCaptureClose
- Can be called when callback indicates that there is a status changed. Can be called from the context of the thread which triggers  fPtrcbStatusChange *cbStatusChange */
-//TODO: Clean up non doxygen comments - confirm first.
 
 /**
  * @brief Get the current status of audio capture interface.
@@ -205,14 +200,13 @@ rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
  */
 rmf_Error RMF_AudioCapture_GetStatus (RMF_AudioCaptureHandle handle, RMF_AudioCapture_Status* status);
 
-/* Will return default RMF_AudioCapture_Settings settings, once AudioCaptureStart gets called with RMF_AudioCapture_Status* argument this
-should still continue to return the default capture settings */
 
 /**
  * @brief Returns friendly default values for @b RMF_AudioCapture_Settings.
  * 
- * The defaults are not expected to change no matter how the capture interface was configured by caller. Caller
- * may then use this structure as a baseline and tweak only some of the settings before setting it via RMF_AudioCapture_Start().
+ * Caller will use this to understand what audio-related parameters preferable for this interface. Caller may then use this structure as a
+ * baseline and tweak only stricly necessary parameters before passing it with RMF_AudioCapture_Start(). The defaults are not expected to change
+ * no matter how the capture interface was configured by caller previously (if at all).
  * @param [out] settings - Default values for audio capture settings. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
@@ -240,14 +234,12 @@ rmf_Error RMF_AudioCapture_GetDefaultSettings (RMF_AudioCapture_Settings* settin
 
 rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RMF_AudioCapture_Settings* settings);
 
-/* This function will start the Audio capture, with the default capture settings if RMF_AudioCapture_Settings is NULL */
-/* This function will start the Audio capture, if RMF_AudioCapture_Settings is NOT NULL then will reconfigure with the provided capture settings as part of
- RMF_AudioCapture_Settings and start audio capture */
 
 /**
  * @brief Starts capturing audio.
  * 
- * If settings parameter is not NULL, underlying implementation must apply the new settings before starting audio capture. Underlying implementation
+ * If settings parameter is not NULL, HAL must apply the new settings before starting audio capture. If settings is NULL, HAL
+ * must apply its default settings (see RMF_AudioCapture_GetDefaultSettings()) and start audio capture. Underlying implementation
  * must invoke RMF_AudioCaptureBufferReadyCb() repeatedly to deliver the data in accordance with the FIFO thresholds set. This process must continue until
  * RMF_AudioCapture_Stop() is called. Once stopped, RMF_AudioCapture may call RMF_AudioCapture_Start() again so long as RMF_AudioCapture_Close() hasn't been
  * invoked yet.
@@ -264,8 +256,7 @@ rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RM
  */
 rmf_Error RMF_AudioCapture_Start (RMF_AudioCaptureHandle handle, RMF_AudioCapture_Settings* settings);
 
-/* This function will stop the audio capture
-Start can be called again after a Stop, as long as Close has not been called */
+
 
 /**
  * @brief Stop audio capture.
@@ -285,7 +276,6 @@ Start can be called again after a Stop, as long as Close has not been called */
  */
 rmf_Error RMF_AudioCapture_Stop (RMF_AudioCaptureHandle handle);
 
-/* Free all resources associated with this AudioCaptureHandle */
 
 /**
  * @brief Close the audio capture interface.
