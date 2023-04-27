@@ -148,7 +148,7 @@ typedef struct {
 /*! Status of audio capture interface */
 /** @todo TBD. Need to determine what is useful and what is possible.*/
 typedef struct {
-    int8_t             started;                /*!< Indicates whether capture has started.
+    int8_t             started;                /*!< Indicates whether capture has started.*/
     racFormat       format;                 /*!< Current capture format (bit depth & channel) */
     racFreq         samplingFreq;           /*!< Current capture sample rate */
     size_t          fifoDepth;              /*!< Number of bytes in local fifo */
@@ -175,6 +175,7 @@ typedef struct {
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
  * @retval RMF_INVALID_PARM Invalid parameter.
+ * @retval RMF_INVALID_STATE Interface is already open.
  * @see RMF_AudioCapture_Close()
  * @note Should the application crash, it's recommended that the HAL be capable of automatically releasing any hardware resources, either when terminating or when
  * the application restarts and call RMF_AudioCapture_Open() again.
@@ -206,12 +207,14 @@ rmf_Error RMF_AudioCapture_GetStatus (RMF_AudioCaptureHandle handle, RMF_AudioCa
  * 
  * Caller will use this to understand what audio-related parameters preferable for this interface. Caller may then use this structure as a
  * baseline and tweak only stricly necessary parameters before passing it with RMF_AudioCapture_Start(). The defaults are not expected to change
- * no matter how the capture interface was configured by caller previously (if at all).
+ * no matter how the capture interface was configured by caller previously (if at all). Caller will only call this API when the interface is in 
+ * OPEN or STARTED state.
  * @param [out] settings - Default values for audio capture settings. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
  * @retval RMF_INVALID_PARM Invalid parameter.
+ * @retval RMF_INVALID_STATE Interface is not in OPEN or STARTED state.
  * @see RMF_AudioCapture_Start()
  */
 rmf_Error RMF_AudioCapture_GetDefaultSettings (RMF_AudioCapture_Settings* settings);
@@ -238,13 +241,12 @@ rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RM
 /**
  * @brief Starts capturing audio.
  * 
- * If settings parameter is not NULL, HAL must apply the new settings before starting audio capture. If settings is NULL, HAL
- * must apply its default settings (see RMF_AudioCapture_GetDefaultSettings()) and start audio capture. Underlying implementation
- * must invoke RMF_AudioCaptureBufferReadyCb() repeatedly to deliver the data in accordance with the FIFO thresholds set. This process must continue until
- * RMF_AudioCapture_Stop() is called. Once stopped, RMF_AudioCapture may call RMF_AudioCapture_Start() again so long as RMF_AudioCapture_Close() hasn't been
- * invoked yet.
+ * HAL must apply the new settings before starting audio capture. Underlying implementation must invoke RMF_AudioCaptureBufferReadyCb() repeatedly to deliver
+ * the data in accordance with the FIFO thresholds set. This process must continue until RMF_AudioCapture_Stop() is called. Once stopped, RMF_AudioCapture may
+ * call RMF_AudioCapture_Start() again so long as RMF_AudioCapture_Close() hasn't been invoked yet. settings.cbBufferReady is not allowed to be NULL.
+ * 
  * @param [in] handle - Handle of the audio capture interface.
- * @param [in] settings - Capture settings to use. If NULL, default capture settings should be used. The life-cycle of settings will be managed by the caller.
+ * @param [in] settings - Capture settings to use. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
