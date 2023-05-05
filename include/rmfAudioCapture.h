@@ -271,7 +271,6 @@ rmf_Error RMF_AudioCapture_Start (RMF_AudioCaptureHandle handle, RMF_AudioCaptur
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
  * @retval RMF_INVALID_HANDLE Invalid handle. 
- * @retval RMF_INVALID_PARM Invalid settings.
  * @retval RMF_INVALID_STATE Capture interface is not in STARTED state.
  * @see RMF_AudioCapture_Start(), RMF_AudioCaptureBufferReadyCb(), RMF_AudioCapture_Close()
  * @pre Must call RMF_AudioCapture_Start() before invoking this function.
