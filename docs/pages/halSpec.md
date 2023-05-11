@@ -53,7 +53,8 @@
 ## Description
 
 AudioCapture `HAL` must deliver a constant stream of raw audio data (`PCM`) to the caller. The purpose of audio capture is to tap the final mix of the decoded audio. The audio data delivered via this interface is required to track as closely as possible, i. e., minimal latency,
-to the audio that's being rendered by the device at a given point of time.
+to the audio that's being rendered by the device at a given point of time. AudioCapture must support capture of primary audio, and may optionally support auxiliary audio (alternate language audio tracks etc.) as well. Where auxiliary audio is supported, `HAL` must be able to support concurrent capture sessions
+for both primary and auxiliary audio. However, caller will not seek to open more than one instance of a capture per source at any point of time.
 ![RMF_AudioCapture data schematic](images/RMF_AudioCapture_HAL_audio_flow.png)
 
 ## Component Runtime Execution Requirements
@@ -156,7 +157,7 @@ flowchart
  ```
 
 Following is a typical sequence of operation:
-1. Open the interface using `RMF_AudioCapture_Open()`.
+1. Open the interface using `RMF_AudioCapture_Open()` or `RMF_AudioCapture_Open_Type()`.
 2. Get default settings using `RMF_AudioCapture_GetDefaultSettings()`. This returns a struct of parameters favourable to the `HAL`. Application may tweak certain members of this struct and pass it with the start call.
 3. Start audio capture using `RMF_AudioCapture_Start()`. The interface will continuously deliver audio data to caller in real time via callback `RMF_AudioCaptureBufferReadyCb()`.
 4. When the audio stream is no longer needed, stop audio capture using `RMF_AudioCapture_Stop()`. This will stop the 'HAL' callbacks.
@@ -169,7 +170,7 @@ Following is a typical sequence of operation:
 
 ```mermaid
    sequenceDiagram
-    caller->>HAL: RMF_AudioCapture_Open()
+    caller->>HAL: RMF_AudioCapture_Open()/RMF_AudioCapture_Open_Type()
     activate HAL
     HAL-->>caller: handle
     deactivate HAL

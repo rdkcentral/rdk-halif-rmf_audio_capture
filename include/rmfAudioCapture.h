@@ -17,7 +17,7 @@
  * limitations under the License.
 */
 /***************************************************************************
-*  
+*
 *  Rmf Audio Capture ->  RAC -> rac
 */
 
@@ -40,14 +40,18 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "rmf_error.h"
+//@TODO Remove all references to rmf_Error in all implementations and switch to RMF_AudioCapture_Return_Code_t
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*! Opaque handle to an instance of RMF AudioCapture interface.*/
-typedef void * RMF_AudioCaptureHandle;
+typedef struct RMF_AudioCapture_Struct *RMF_AudioCaptureHandle;
+//@TODO Change handle type to void * instead of introducing a bi-directional dependency with HAL implementation above.
 
-
+#ifndef _RMF_ERROR_H_
 typedef enum
 {
     RMF_SUCCESS = 0, /*! Success. */
@@ -57,7 +61,12 @@ typedef enum
     RMF_NOT_INITIALIZED, /*! Interface not initialized. */
     RMF_INVALID_STATE /*! Invalid state or unsupported sequence of API calls. */
 } RMF_AudioCapture_Return_Code_t;
+#endif
+//@TODO Remove the ifndef check when dependency on rmf_error.h is removed.
 
+typedef char *RMF_AudioCaptureType; /**< Audio source to be captured. Options are RMF_AC_TYPE_PRIMARY or RMF_AC_TYPE_AUXILIARY */
+#define RMF_AC_TYPE_PRIMARY "primary" /**< Primary audio that is currently selected to play with video */
+#define RMF_AC_TYPE_AUXILIARY "auxiliary" /**< Audio source that is different from primary audio - can be audio track with a different language */
 
 /*! Describes more specifics about the audio parameters to be used for audio samples*/
 typedef enum {
@@ -71,7 +80,7 @@ typedef enum {
                                     Channels will interleave one sample per 32-bit word, ordered L,R,Ls,Rs,C,LFE.  */
     racFormat_eMax
 } racFormat;
-//TODO: prefix all symbols with RMF_AudioCapture - for longer term. Enum - get rid of underscore dummies.
+//@TODO: prefix all symbols with RMF_AudioCapture - for longer term. Enum - get rid of underscore dummies.
 
 
 /*! Audio sampling rate*/
@@ -106,7 +115,7 @@ typedef enum {
  * @retval RMF_INVALID_PARM Invalid parameter.
  * @see RMF_AudioCapture_Settings, RMF_AudioCapture_Start()
  */
-//TODO: Consider returning void if return is not used.
+//@TODO: Consider returning void if return is not used.
 typedef rmf_Error (*RMF_AudioCaptureBufferReadyCb)(void *cbBufferReadyParm, void *AudioCaptureBuffer, unsigned int AudioCaptureBufferSize);
 
 
@@ -120,7 +129,7 @@ typedef rmf_Error (*RMF_AudioCaptureBufferReadyCb)(void *cbBufferReadyParm, void
  * @retval RMF_INVALID_PARM Invalid parameter.
  * @see RMF_AudioCapture_Settings, RMF_AudioCapture_Start()
  */
-//TODO: Consider returning void if return is not used.
+//@TODO: Consider returning void if return is not used.
 typedef rmf_Error (*RMF_AudioCapture_StatusChangeCb)(void *cbStatusParm);
 
 /*! Configuration parameters of audio capture interface.*/
@@ -154,8 +163,12 @@ typedef struct {
     size_t          fifoDepth;              /*!< Number of bytes in local fifo */
     uint32_t    overflows;              /*!< Overflow count */
     uint32_t    underflows;             /*!< Underflow count */
+    int8_t muted;                       /*!< Indicates whether capture is muted */
+    int8_t paused;                       /*!< Indicates whether capture is paused */
+    float volume;                       /*!< Current capture volume */
+
 } RMF_AudioCapture_Status;
-//TODO: use bool (stdbool.h) for started.
+//@TODO: use bool (stdbool.h) for started, muted and paused.
 
 
 /*
@@ -164,18 +177,18 @@ typedef struct {
 
 
 /**
- * @brief Open the audio capture interface.
- * 
- * This function will be the first call when this library is used. Any other interface exposed by this library. 
+ * @brief Open the audio capture interface for primary audio.
+ *
+ * This function or RMF_AudioCapture_Open_Type() will be the first call when this library is used. Any other interface exposed by this library.
  * Underlying implementation must acquire the necessary hardware and software resources necessary to capture audio.
- * RMF_AudioCapture doesn't expect more than one such interface to be available concurrently and will close the open interface before calling open again.
+ * RMF_AudioCapture doesn't expect more than one primary capture session to be available concurrently and will close the open session before calling open again.
  * @param [out] handle - An opaque capture interface handle, which should not be modified by caller and has to be passed as an argument
  *                          for all subsequent API calls.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
  * @retval RMF_INVALID_PARM Invalid parameter.
- * @retval RMF_INVALID_STATE Interface is already open.
+ * @retval RMF_INVALID_STATE Interface is already open for primary source.
  * @see RMF_AudioCapture_Close()
  * @note Should the application crash, it's recommended that the HAL be capable of automatically releasing any hardware resources, either when terminating or when
  * the application restarts and call RMF_AudioCapture_Open() again.
@@ -184,11 +197,32 @@ rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
 
 
 /**
- * @brief Get the current status of audio capture interface.
+ * @brief Open the audio capture interface for specified audio source.
+ *
+ * This function or RMF_AudioCapture_Open() will be the first call when this library is used. Underlying implementation must acquire the necessary hardware and 
+ * software resources to capture audio. RMF_AudioCapture may open one primary capture session or one auxiliary capture session at a time, or it may have both primary
+ * and auxiliary capture sessions open at the same time. There will not be more than one capture session open for the same capture type at any point of time.
  * 
+ * @param [out] handle - An opaque capture interface handle, which should not be modified by caller and has to be passed as an argument
+ *                          for all subsequent API calls.
+ * @param [in] rmfAcType - Source of audio to be captured (primary or auxiliary).
+ * @return rmf_Error
+ * @retval RMF_SUCCESS Success
+ * @retval RMF_ERROR General error.
+ * @retval RMF_INVALID_PARM Invalid parameter.
+ * @retval RMF_INVALID_STATE Interface is already open for this audio capture type.
+ * @see RMF_AudioCapture_Close()
+ * @note Should the application crash, it's recommended that the HAL be capable of automatically releasing any hardware resources, either when terminating or when
+ * the application restarts and call RMF_AudioCapture_Open() again.
+ */
+rmf_Error RMF_AudioCapture_Open_Type (RMF_AudioCaptureHandle* handle, RMF_AudioCaptureType rmfAcType);
+
+/**
+ * @brief Get the current status of audio capture interface.
+ *
  * This API can be called as long as a valid handle is available (after opening and before close).
  * API may be invoked as a resonse to RMF_AudioCapture_StatusChangeCb(), possibly inside the callback itself.
- * 
+ *
  * @param [in] handle - Handle of the audio capture interface.
  * @param [out] status - Status returned by the underlying implementation. The life-cycle of status will be managed by the caller.
  * @return rmf_Error
@@ -204,10 +238,10 @@ rmf_Error RMF_AudioCapture_GetStatus (RMF_AudioCaptureHandle handle, RMF_AudioCa
 
 /**
  * @brief Returns friendly default values for @b RMF_AudioCapture_Settings.
- * 
+ *
  * Caller will use this to understand what audio-related parameters preferable for this interface. Caller may then use this structure as a
  * baseline and tweak only stricly necessary parameters before passing it with RMF_AudioCapture_Start(). The defaults are not expected to change
- * no matter how the capture interface was configured by caller previously (if at all). Caller will only call this API when the interface is in 
+ * no matter how the capture interface was configured by caller previously (if at all). Caller will only call this API when the interface is in
  * OPEN or STARTED state.
  * @param [out] settings - Default values for audio capture settings. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
@@ -221,14 +255,14 @@ rmf_Error RMF_AudioCapture_GetDefaultSettings (RMF_AudioCapture_Settings* settin
 
 /**
  * @brief Returns current values of @b RMF_AudioCapture_Settings in effect.
- * 
+ *
  * The output should match the configuration previously set successfully via RMF_AudioCapture_Start().
  * @param [in] handle - Handle of the audio capture interface.
  * @param [out] settings - Current values of audio capture settings. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
- * @retval RMF_INVALID_HANDLE Invalid handle. 
+ * @retval RMF_INVALID_HANDLE Invalid handle.
  * @retval RMF_INVALID_PARM Invalid parameter.
  * @retval RMF_INVALID_STATE Capture interface is not in STARTED state.
  * @see RMF_AudioCapture_Start()
@@ -240,17 +274,17 @@ rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RM
 
 /**
  * @brief Starts capturing audio.
- * 
+ *
  * HAL must apply the new settings before starting audio capture. Underlying implementation must invoke RMF_AudioCaptureBufferReadyCb() repeatedly to deliver
  * the data in accordance with the FIFO thresholds set. This process must continue until RMF_AudioCapture_Stop() is called. Once stopped, RMF_AudioCapture may
  * call RMF_AudioCapture_Start() again so long as RMF_AudioCapture_Close() hasn't been invoked yet. settings.cbBufferReady is not allowed to be NULL.
- * 
+ *
  * @param [in] handle - Handle of the audio capture interface.
  * @param [in] settings - Capture settings to use. The life-cycle of settings will be managed by the caller.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
- * @retval RMF_INVALID_HANDLE Invalid handle. 
+ * @retval RMF_INVALID_HANDLE Invalid handle.
  * @retval RMF_INVALID_PARM Invalid settings.
  * @retval RMF_INVALID_STATE Capture interface is already in started state.
  * @see RMF_AudioCapture_Stop(), RMF_AudioCaptureBufferReadyCb(), RMF_AudioCapture_GetDefaultSettings(), RMF_AudioCapture_Close()
@@ -262,15 +296,15 @@ rmf_Error RMF_AudioCapture_Start (RMF_AudioCaptureHandle handle, RMF_AudioCaptur
 
 /**
  * @brief Stop audio capture.
- * 
+ *
  * Underlying implementation must no longer generate RMF_AudioCaptureBufferReadyCb() calls after this. Caller may
  * choose to call RMF_AudioCapture_Start() again to restart capture as long as RMF_AudioCapture_Close() hasn't been called.
- * 
+ *
  * @param [in] handle - Handle of the audio capture interface.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
- * @retval RMF_INVALID_HANDLE Invalid handle. 
+ * @retval RMF_INVALID_HANDLE Invalid handle.
  * @retval RMF_INVALID_STATE Capture interface is not in STARTED state.
  * @see RMF_AudioCapture_Start(), RMF_AudioCaptureBufferReadyCb(), RMF_AudioCapture_Close()
  * @pre Must call RMF_AudioCapture_Start() before invoking this function.
@@ -280,14 +314,14 @@ rmf_Error RMF_AudioCapture_Stop (RMF_AudioCaptureHandle handle);
 
 /**
  * @brief Close the audio capture interface.
- * 
+ *
  * This call must free all resources acquired since RMF_AudioCapture_Open() call and will invalidate the handle. The caller will not go directly from
  * STARTED to CLOSED state; it will call stop beforehand. RMF_AudioCapture may choose to open the interface again using RMF_AudioCapture_Open() in future.
  * @param [in] handle - Handle of the audio capture interface.
  * @return rmf_Error
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error.
- * @retval RMF_INVALID_HANDLE Invalid handle. 
+ * @retval RMF_INVALID_HANDLE Invalid handle.
  * @retval RMF_INVALID_STATE Capture interface is in STARTED state.
  * @see RMF_AudioCapture_Start(), RMF_AudioCapture_Close(), RMF_AudioCapture_Open()
  * @pre Must call RMF_AudioCapture_Open() before invoking this function.
