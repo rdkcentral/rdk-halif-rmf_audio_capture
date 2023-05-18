@@ -80,7 +80,7 @@ typedef enum {
                                     Channels will interleave one sample per 32-bit word, ordered L,R,Ls,Rs,C,LFE.  */
     racFormat_eMax
 } racFormat;
-//@TODO: prefix all symbols with RMF_AudioCapture - for longer term. Enum - get rid of underscore dummies.
+//@TODO: prefix all symbols with RMF_AudioCapture
 
 
 /*! Audio sampling rate*/
@@ -200,8 +200,8 @@ rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
  * @brief Open the audio capture interface for specified audio source.
  *
  * This function or RMF_AudioCapture_Open() will be the first call when this library is used. Underlying implementation must acquire the necessary hardware and 
- * software resources to capture audio. RMF_AudioCapture may open one primary capture session or one auxiliary capture session at a time, or it may have both primary
- * and auxiliary capture sessions open at the same time. There will not be more than one capture session open for the same capture type at any point of time.
+ * software resources to capture audio. RMF_AudioCapture may have both primary and auxiliary capture sessions open at the same time. 
+ * There will not be more than one capture session open for the same capture type at any point of time.
  * 
  * @param [out] handle - An opaque capture interface handle, which should not be modified by caller and has to be passed as an argument
  *                          for all subsequent API calls.
