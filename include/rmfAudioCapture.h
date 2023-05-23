@@ -61,7 +61,17 @@ typedef enum
     RMF_NOT_INITIALIZED, /*! Interface not initialized. */
     RMF_INVALID_STATE /*! Invalid state or unsupported sequence of API calls. */
 } RMF_AudioCapture_Return_Code_t;
-#endif
+#else //_RMF_ERROR_H_
+//If rmf_error.h is in use, RMF_SUCCESS is already defined. 
+typedef enum
+{
+    RMF_ERROR = 1, /*! Generic catch-all error code. */
+    RMF_INVALID_PARM, /*! Invalid parameter(s). */
+    RMF_INVALID_HANDLE, /*! Invalid handle. */
+    RMF_NOT_INITIALIZED, /*! Interface not initialized. */
+    RMF_INVALID_STATE /*! Invalid state or unsupported sequence of API calls. */
+} RMF_AudioCapture_Return_Code_t;
+#endif // _RMF_ERROR_H_
 //@TODO Remove the ifndef check when dependency on rmf_error.h is removed.
 
 typedef char *RMF_AudioCaptureType; /**< Audio source to be captured. Options are RMF_AC_TYPE_PRIMARY or RMF_AC_TYPE_AUXILIARY */
@@ -191,7 +201,7 @@ typedef struct {
  * @retval RMF_INVALID_STATE Interface is already open for primary source.
  * @see RMF_AudioCapture_Close()
  * @note Should the application crash, it's recommended that the HAL be capable of automatically releasing any hardware resources, either when terminating or when
- * the application restarts and call RMF_AudioCapture_Open() again.
+ * the application restarts and RMF_AudioCapture_Open()/RMF_AudioCapture_Open_Type() again.
  */
 rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
 
@@ -213,7 +223,7 @@ rmf_Error RMF_AudioCapture_Open (RMF_AudioCaptureHandle* handle);
  * @retval RMF_INVALID_STATE Interface is already open for this audio capture type.
  * @see RMF_AudioCapture_Close()
  * @note Should the application crash, it's recommended that the HAL be capable of automatically releasing any hardware resources, either when terminating or when
- * the application restarts and call RMF_AudioCapture_Open() again.
+ * the application restarts and calls RMF_AudioCapture_Open()/RMF_AudioCapture_Open_Type() again.
  */
 rmf_Error RMF_AudioCapture_Open_Type (RMF_AudioCaptureHandle* handle, RMF_AudioCaptureType rmfAcType);
 
@@ -268,7 +278,6 @@ rmf_Error RMF_AudioCapture_GetDefaultSettings (RMF_AudioCapture_Settings* settin
  * @see RMF_AudioCapture_Start()
  * @pre Must call RMF_AudioCapture_Start() before invoking this function.
  */
-
 rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RMF_AudioCapture_Settings* settings);
 
 

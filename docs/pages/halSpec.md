@@ -108,7 +108,7 @@ The following non-functional requirements are required to be supported by this i
 
 ### Logging and debugging requirements
 
-This interface is required to log all errors, warnings and critical informative messages that are necessary to debug/triage any issues impacting audio capture use cases. It's expected that the interface will use stdout and stderr for logging.
+This interface is required to support DEBUG, INFO and ERROR messages. DEBUG is required to be disabled by default and enabled when needed.
 
 ### Memory and performance requirements
 
@@ -116,11 +116,11 @@ This interface is required to use only minimal memory/CPU resources while in clo
 
 ### Quality Control
 
-* The implementation is required to perform static analysis, our preferred tool is Coverity.
-* Open-source copyright validation is required to be performed, e.g.: Black duck, FossID.
-* Have a zero-warning policy with regards to compiling. All warnings are required to be treated as errors.
-* Use of memory analysis tools like Valgrind are encouraged, to identify leaks/corruption.
-* Tests will endeavour to create worst case scenarios to assist investigations.
+* This interface is required to perform static analysis, our preferred tool is Coverity.
+* Have a zero-warning policy with regards to compiling. All warnings are required to be treated as error.
+* Copyright validation is required to be performed, e.g.: Black duck, FossID.
+* Use of memory analysis tools like Valgrind are encouraged, to identify leaks/corruptions.
+* HAL Tests will endeavour to create worst case scenarios to assist investigations.
 * Improvements by any party to the testing suite are required to be fed back.
 
 ### Licensing
