@@ -1,2 +1,1 @@
-# rdk-components-hal-rmfaudiocapture
-RMF AudioCapture HAL
+./docs/pages/halSpec.md
