@@ -44,7 +44,8 @@
 #include "rmf_error.h"
 /* @todo Remove all references to rmf_Error in all implementations and switch to RMF_AudioCapture_Return_Code_t */
 
-#ifdef __cplusplusextern "C" {
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**
