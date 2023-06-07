@@ -41,9 +41,6 @@
 #include <stdbool.h>
 /** @todo use bool (stdbool.h) for started, muted and paused */
 
-#include "rmf_error.h"
-/* @todo Remove all references to rmf_Error in all implementations and switch to RMF_AudioCapture_Return_Code_t */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -70,8 +67,12 @@ typedef enum
     RMF_NOT_INITIALIZED,    //!< Interface not initialized
     RMF_INVALID_STATE       //!< Invalid state or unsupported sequence of API calls
 } RMF_AudioCapture_Return_Code_t;
+
+typedef RMF_AudioCapture_Return_Code_t rmf_Error; //!< Return code, for backward compatibility
 #else //_RMF_ERROR_H_
-// If rmf_error.h is in use, RMF_SUCCESS is already defined.
+// If rmf_error.h is in use, RMF_SUCCESS is already defined, so use that instead.
+#include "rmf_error.h"
+/* @todo Remove all references to rmf_Error in all implementations and switch to RMF_AudioCapture_Return_Code_t */
 typedef enum
 {
     RMF_ERROR = 1,          //!< Generic catch-all error code
