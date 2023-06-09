@@ -22,14 +22,31 @@
 */
 
 /**
- * @defgroup RMF_AudioCapture RDK-V RMF AudioCapture
+ * @addtogroup HPK HPK
+ * @{
+ * @par The Hardware Porting Kit
+ * HPK is the next evolution of the well-defined Hardware Abstraction Layer
+ * (HAL), but augmented with more comprehensive documentation and test suites
+ * that OEM or SOC vendors can use to self-certify their ports before taking
+ * them to RDKM for validation or to an operator for final integration and
+ * deployment. The Hardware Porting Kit effectively enables an OEM and/or SOC
+ * vendor to self-certify their own Video Accelerator devices, with minimal RDKM
+ * assistance.
+ *
+ */
+
+/**
+ * @addtogroup RMF_AudioCapture RDK-V RMF AudioCapture
  * @{
  * @par Application API Specification
- * RMF AudioCapture is the RDK-V interface designed to tap into the audio output of an STB/TV. When in use, the underlying
- * SoC implementation will deliver a steady stream of raw audio data (PCM). This audio will include the active audio track
- * of whatever content is being played, and may include other sounds mixed in, such as voice-guidance, application-driven
- * audio overlays (eg: beeps) etc. RDK will attempt to configure audio format parameters (channels, bit rate etc.) to its liking
- * but not all combinations are expected to be supported by the SoC implementation.
+ * RMF AudioCapture is the RDK-V interface designed to tap into the audio output
+ * of an STB/TV. When in use, the underlying SoC implementation will deliver a
+ * steady stream of raw audio data (PCM). This audio will include the active
+ * audio track of whatever content is being played, and may include other sounds
+ * mixed in, such as voice-guidance, application-driven audio overlays (eg:
+ * beeps) etc. RDK will attempt to configure audio format parameters (channels,
+ * bit rate etc.) to its liking but not all combinations are expected to be
+ * supported by the SoC implementation.
  *
  */
 
@@ -378,6 +395,7 @@ rmf_Error RMF_AudioCapture_Close (RMF_AudioCaptureHandle handle);
 #ifdef __cplusplus
 }
 #endif
-/** @} */
+/** @} */ // End of RMF_AudioCapture RDK-V RMF AudioCapture
+/** @} */ // End of HPK
 
 #endif /* __RMF_AUDIO_CAPTURE_H__ */
