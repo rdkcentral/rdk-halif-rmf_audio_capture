@@ -36,10 +36,10 @@
  */
 
 /**
- * @addtogroup RMF_AudioCapture RDK-V RMF AudioCapture
+ * @addtogroup RMF_AudioCapture RMF AudioCapture
  * @{
  * @par Application API Specification
- * RMF AudioCapture is the RDK-V interface designed to tap into the audio output
+ * RMF AudioCapture is the RDK interface designed to tap into the audio output
  * of an STB/TV. When in use, the underlying SoC implementation will deliver a
  * steady stream of raw audio data (PCM). This audio will include the active
  * audio track of whatever content is being played, and may include other sounds
@@ -395,7 +395,7 @@ rmf_Error RMF_AudioCapture_Close (RMF_AudioCaptureHandle handle);
 #ifdef __cplusplus
 }
 #endif
-/** @} */ // End of RMF_AudioCapture RDK-V RMF AudioCapture
+/** @} */ // End of RMF_AudioCapture RMF AudioCapture
 /** @} */ // End of HPK
 
 #endif /* __RMF_AUDIO_CAPTURE_H__ */
