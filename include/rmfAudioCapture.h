@@ -56,7 +56,6 @@
 #include <stddef.h>  /* size_t */
 #include <inttypes.h>
 #include <stdbool.h>
-/** @todo use bool (stdbool.h) for started, muted and paused */
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,14 +64,12 @@ extern "C" {
 /**
  * @brief Opaque handle to an instance of RMF AudioCapture interface.
  *
- * @todo Change handle type to void * instead of introducing a bi-directional dependency with HAL implementation above
  */
 typedef struct RMF_AudioCapture_Struct *RMF_AudioCaptureHandle;
 
 /**
  * @brief RMF Error Codes
  *
- * @todo Remove the ifndef check when dependency on rmf_error.h is removed
  */
 #ifndef _RMF_ERROR_H_
 typedef enum
@@ -89,7 +86,7 @@ typedef RMF_AudioCapture_Return_Code_t rmf_Error; //!< Return code, for backward
 #else //_RMF_ERROR_H_
 // If rmf_error.h is in use, RMF_SUCCESS is already defined, so use that instead.
 #include "rmf_error.h"
-/* @todo Remove all references to rmf_Error in all implementations and switch to RMF_AudioCapture_Return_Code_t */
+
 typedef enum
 {
     RMF_ERROR = 1,          //!< Generic catch-all error code
@@ -108,7 +105,6 @@ typedef char *RMF_AudioCaptureType;         //!< Audio source to be captured. Op
 /**
  * @brief Describes more specifics about the audio parameters to be used for audio samples
  *
- * @todo: prefix all symbols with RMF_AudioCapture
  */
 typedef enum
 {
@@ -156,7 +152,6 @@ typedef enum
  * @retval RMF_INVALID_PARM Invalid parameter
  *
  * @see RMF_AudioCapture_Settings, RMF_AudioCapture_Start()
- * @todo: Consider returning void if return is not used
  */
 typedef rmf_Error (*RMF_AudioCaptureBufferReadyCb)(void *cbBufferReadyParm, void *AudioCaptureBuffer, unsigned int AudioCaptureBufferSize);
 
@@ -174,7 +169,6 @@ typedef rmf_Error (*RMF_AudioCaptureBufferReadyCb)(void *cbBufferReadyParm, void
  * @retval RMF_INVALID_PARM Invalid parameter
  *
  * @see RMF_AudioCapture_Settings, RMF_AudioCapture_Start()
- * @todo: Consider returning void if return is not used
  */
 typedef rmf_Error (*RMF_AudioCapture_StatusChangeCb)(void *cbStatusParm);
 
@@ -200,7 +194,6 @@ typedef struct
 /**
  * @brief Status of audio capture interface
  *
- * @todo TBD. Need to determine what is useful and what is possible
  */
 typedef struct
 {

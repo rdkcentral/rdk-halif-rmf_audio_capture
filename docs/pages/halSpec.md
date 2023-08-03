@@ -1,5 +1,3 @@
-@mainpage
-
 # AudioCapture HAL Documentation
 
 ## Version and Version History
