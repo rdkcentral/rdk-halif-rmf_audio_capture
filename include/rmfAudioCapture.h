@@ -36,7 +36,7 @@
  */
 
 /**
- * @addtogroup RMF_AudioCapture RMF AudioCapture
+ * @addtogroup RMF_AudioCapture RMF Audio Capture
  * @{
  * @par Application API Specification
  * RMF AudioCapture is the RDK interface designed to tap into the audio output
@@ -48,6 +48,11 @@
  * bit rate etc.) to its liking but not all combinations are expected to be
  * supported by the SoC implementation.
  *
+ */
+
+/**
+ * @defgroup RMF_AudioCapture_HAL RMF Audio Capture HAL
+ * @{
  */
 
 #ifndef __RMF_AUDIO_CAPTURE_H__
@@ -388,7 +393,8 @@ rmf_Error RMF_AudioCapture_Close (RMF_AudioCaptureHandle handle);
 #ifdef __cplusplus
 }
 #endif
-/** @} */ // End of RMF_AudioCapture RMF AudioCapture
+/** @} */ // End of RMF_AudioCapture_HAL
+/** @} */ // End of RMF_AudioCapture
 /** @} */ // End of HPK
 
 #endif /* __RMF_AUDIO_CAPTURE_H__ */
