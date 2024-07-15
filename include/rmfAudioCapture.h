@@ -163,7 +163,10 @@ typedef rmf_Error (*RMF_AudioCaptureBufferReadyCb)(void *cbBufferReadyParm, void
 /**
  * @brief Callback for underlying implementation to signal a change in status
  *
- * RDK may then call RMF_AudioCapture_GetStatus() to get more details
+ * RDK may then call RMF_AudioCapture_GetStatus() to get more details. This callback is optional and may be NULL. If not NULL, the underlying
+ * implementation must invoke this callback when there is a change of state (started vs stopped), or audio parameters (format, sampling rate)
+ * currently in use. If the implementation experiences any adverse events that hinder an active capture session, implementation shall change its 
+ * internal state to stopped and invoke this callback to notify caller.
  *
  * @param [in] cbStatusParm - Caller context data passed back (optional) in the callback
  *
@@ -189,9 +192,9 @@ typedef struct
     RMF_AudioCapture_StatusChangeCb cbStatusChange; //!< If cbStatusChange is not NULL, then the underlying implementation should invoke this callback when there is a change of state in the audio capture interface. Examples: OnStart of AC, Change from Start to Stop of AC. On underflow/overflow
     void *cbStatusParm;                             //!< Caller context data passed back in status change callback
 
-    size_t fifoSize;                                //!< FIFO size in bytes.  This value is a total FIFO size to hold all channels of data. If not set, a default size will be used.  Needs to be big enough to avoid overflow (expected service time * byte rate)
-    size_t threshold;                               //!< FIFO data callback threshold in bytes.  When the amount of data in the FIFO reaches this level, the buffer-ready will be invoked
-    racFormat format;                               //!< Format of captured data.  Default is racFormat_e16BitStereThis value is ignored for compressed data, and can not be changed while connected to any inputs
+    size_t fifoSize;                                //!< FIFO size in bytes.  This value is a total FIFO size to hold all channels of data. If not set, a default size will be used.  Needs to be big enough to avoid overflow (expected service time * byte rate). It should be large enough to hold at least 333 ms of audio data. If FIFO size is 0, implementation may choose a size.
+    size_t threshold;                               //!< FIFO data callback threshold in bytes.  When the amount of data in the FIFO reaches this level, the buffer-ready will be invoked. It should at most be 1/4th of FIFO size. If FIFO size is 0, vendor may set a threshold that's at most 1/4th its chosen FIFO size.
+    racFormat format;                               //!< Format of captured data.  Default is racFormat_e16BitStereo. This value is ignored for compressed data, and can not be changed while connected to any inputs. Little-endian byte order is assumed for PCM data.
     racFreq samplingFreq;                           //!< Sampling rate of captured audio. Not currently supported. TBD
     uint32_t    delayCompensation_ms;               //!< Delay compensation in milli seconds. This parameter is used to maintain AV sync when using latency-prone audio outputs like Bluetooth. It's the number of ms to delay video by in order to stay in sync with Bluetooth audio
 } RMF_AudioCapture_Settings;
@@ -205,12 +208,12 @@ typedef struct
     int8_t  started;        //!< Indicates whether capture has started
     racFormat format;       //!< Current capture format (bit depth & channel)
     racFreq samplingFreq;   //!< Current capture sample rate
-    size_t fifoDepth;       //!< Number of bytes in local fifo
+    size_t fifoDepth;       //!< Number of bytes in local fifo.
     uint32_t overflows;     //!< Overflow count
     uint32_t underflows;    //!< Underflow count
-    int8_t muted;           //!< Indicates whether capture is muted
-    int8_t paused;          //!< Indicates whether capture is paused
-    float volume;           //!< Current capture volume
+    int8_t muted;           //!< Deprecated. Indicates whether capture is muted
+    int8_t paused;          //!< Deprecated. Indicates whether capture is paused
+    float volume;           //!< Deprecated. Current capture volume
 
 } RMF_AudioCapture_Status;
 
@@ -333,6 +336,12 @@ rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RM
  * HAL must apply the new settings before starting audio capture. Underlying implementation must invoke RMF_AudioCaptureBufferReadyCb() repeatedly to deliver
  * the data in accordance with the FIFO thresholds set. This process must continue until RMF_AudioCapture_Stop() is called. Once stopped, RMF_AudioCapture may
  * call RMF_AudioCapture_Start() again so long as RMF_AudioCapture_Close() hasn't been invoked yet. settings.cbBufferReady is not allowed to be NULL.
+ * 
+ * If there is no capturable audio data (eg: muted audio or no active playback), implementation must still invoke RMF_AudioCaptureBufferReadyCb() filled with
+ * silence and maintain expected data rate.
+ * 
+ * If any of the parameters (eg: audio format) passed in settings are unsupported or invalid, implementation must return RMF_INVALID_PARM. Implementation is not
+ * required to support all defined audio formats and/or sampling rates. However, it must support at least 16-bit stereo PCM format.
  *
  * @param [in] handle - Handle of the audio capture interface.
  * @param [in] settings - Capture settings to use. The life-cycle of settings will be managed by the caller.
@@ -341,7 +350,7 @@ rmf_Error RMF_AudioCapture_GetCurrentSettings (RMF_AudioCaptureHandle handle, RM
  * @retval RMF_SUCCESS Success
  * @retval RMF_ERROR General error
  * @retval RMF_INVALID_HANDLE Invalid handle
- * @retval RMF_INVALID_PARM Invalid settings
+ * @retval RMF_INVALID_PARM Invalid or unsupported setting parameter(s)
  * @retval RMF_INVALID_STATE Capture interface is already in started state
  *
  * @see RMF_AudioCapture_Stop(), RMF_AudioCaptureBufferReadyCb(), RMF_AudioCapture_GetDefaultSettings(), RMF_AudioCapture_Close()

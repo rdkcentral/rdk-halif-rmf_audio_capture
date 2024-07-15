@@ -45,6 +45,12 @@
 RMF Audio Capture `HAL` must deliver a constant stream of raw audio data (`PCM`) to the `caller`. The purpose of audio capture is to tap the final mix of the decoded audio. The audio data delivered via this interface is required to track as closely as possible, i. e., minimal latency,
 to the audio that's being rendered by the device at a given point of time. Audio Capture must support capture of primary audio, and may optionally support auxiliary audio (alternate language audio tracks etc.) as well. Where auxiliary audio is supported, `HAL` must be able to support concurrent capture sessions
 for both primary and auxiliary audio. However, `caller` will not seek to open more than one instance of a capture per source at any point of time.
+
+Should a situation arise where there is no audio data available to capture (eg: no active video playback), `HAL` must continue to send buffers
+to caller that are filled with silence. `HAL` must maintain the expected data rate for the format while doing so.
+
+As far as audio format support is concerned, `HAL` is not required to support all formats and sampling rates defined in the header file. However, 16-bit stereo PCM format must be supported at a sampling rate of 44.1kHz or higher.
+
 ![RMF_AudioCapture data schematic](images/RMF_AudioCapture_HAL_audio_flow.png)
 
 ## Component Runtime Execution Requirements
