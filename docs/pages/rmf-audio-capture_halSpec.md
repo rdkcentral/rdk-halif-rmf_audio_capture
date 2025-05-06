@@ -67,7 +67,8 @@ flowchart LR
     AudioCapture -->|to caller| Caller
 
     Mixer -->|mixed audio| Output
-    Output["to speaker, HDMI, SPDIF, bluetooth output"]
+    Output["to speaker, HDMI, SPDIF,
+bluetooth output"]
  ```
 
 ## Component Runtime Execution Requirements
