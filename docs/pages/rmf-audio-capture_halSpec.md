@@ -51,7 +51,25 @@ to caller that are filled with silence. `HAL` must maintain the expected data ra
 
 As far as audio format support is concerned, `HAL` is not required to support all formats and sampling rates defined in the header file. However, 16-bit stereo PCM format must be supported at a sampling rate of 44.1kHz or higher.
 
-![RMF_AudioCapture data schematic](images/RMF_AudioCapture_HAL_audio_flow.png)
+```mermaid
+flowchart LR
+    subgraph Inputs
+        A1["audio 1"]
+        A2["audio 2"]
+        AN["audio N"]
+    end
+
+    A1 --> Mixer
+    A2 --> Mixer
+    AN --> Mixer
+
+    Mixer -->|mixed audio| AudioCapture
+    AudioCapture -->|to caller| Caller
+
+    Mixer -->|mixed audio| Output
+    Output["to speaker, HDMI, SPDIF,
+bluetooth output"]
+ ```
 
 ## Component Runtime Execution Requirements
 
