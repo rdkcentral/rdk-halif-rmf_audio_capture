@@ -168,7 +168,7 @@ via the registered callbacks in a timely fashion. Calling `RMF_AudioCapture_Open
 flowchart
     D[Caller] --> |control| E[Audio Capture HAL]
     E --> |audio data| D
- ```
+```
 
 Following is a typical sequence of operation:
 1. Open the interface using `RMF_AudioCapture_Open()` or `RMF_AudioCapture_Open_Type()`.
@@ -205,7 +205,7 @@ Following is a typical sequence of operation:
     caller->>HAL: RMF_AudioCapture_Stop(handle)
     deactivate HAL
     caller->>HAL: RMF_AudioCapture_Close(handle
- ```
+```
 
 #### State machine Diagram
 
